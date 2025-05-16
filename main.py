@@ -40,7 +40,7 @@ def get_formatted_youtube_url(url: str):
     video_id = params["v"][0]
     
     # 整形後のURLを取得
-    query = "v={0}".format(video_id)
+    query = f"v={video_id}"
     formatted_url = urlunparse((result.scheme, result.netloc, result.path, "", query, ""))
 
     return formatted_url
@@ -61,10 +61,6 @@ def main(page: ft.Page):
     page.window.min_width = 500
     page.window.min_height = 400
 
-    #
-    # 変数定義
-    #
-
     # デフォルトパス
     save_dir_path = get_default_save_path()
 
@@ -74,16 +70,19 @@ def main(page: ft.Page):
     }
 
     #
-    # イベント用関数定義
+    # イベント定義
     #
 
     def event_get_directory_result(e: ft.FilePickerResultEvent):
-        if e.files:
-            print(e.path)
+        if e.path:
             text_field_save_path.value = e.path
             text_field_save_path.update()
         else:
             print("canceled!")
+
+    def event_click_button_select_directory():
+        get_directory_dialog.get_directory_path(
+            initial_directory=str(save_dir_path))
 
     def event_remove_input_url(e):
         target_key = e.control.data
@@ -140,7 +139,7 @@ def main(page: ft.Page):
     def event_download_files():
         # 保存先パスの指定
         save_dir_path = text_field_save_path.value
-        outtmpl_str = "{0}/%(title)s.%(ext)s".format(save_dir_path)
+        outtmpl_str = f"{save_dir_path}/%(title)s.%(ext)s"
         ytdlp_option["outtmpl"] = outtmpl_str
 
         # 保存対象の確認オプション値の再設定
@@ -162,7 +161,7 @@ def main(page: ft.Page):
         progress_limit = len(url_list)
         progress_bar_download_status.value = 0
         progress_bar_download_status.visible = True
-        text_download_status.value = "現在のダウンロード状況 ... 0/{0} 進行中".format(progress_limit)
+        text_download_status.value = f"現在のダウンロード状況 ... 0/{progress_limit} 進行中"
         text_download_status.visible = True
         page.update()
 
@@ -172,7 +171,7 @@ def main(page: ft.Page):
                 ydl.extract_info(url)
                 progress_count += 1
                 progress_bar_download_status.value = (progress_count / progress_limit)
-                text_download_status.value = "現在のダウンロード状況 ... {0}/{1} 進行中".format(progress_count, progress_limit)
+                text_download_status.value = f"現在のダウンロード状況 ... {progress_count}/{progress_limit} 進行中"
                 page.update()
 
             time.sleep(1)
@@ -194,8 +193,7 @@ def main(page: ft.Page):
 
     # FilePicker定義
     # Note: appendによるpage追加がないとエラー発生
-    get_directory_dialog = ft.FilePicker(
-        on_result=event_get_directory_result)
+    get_directory_dialog = ft.FilePicker(on_result=event_get_directory_result)
     page.overlay.append(get_directory_dialog)
 
     # 拡張子選択用チェックボックス
@@ -231,9 +229,7 @@ def main(page: ft.Page):
     button_select_save_path = ft.FilledButton(
         text="選択",
         disabled=page.web,
-        on_click=lambda _: get_directory_dialog.get_directory_path(
-            initial_directory=str(save_dir_path)
-        )
+        on_click=lambda _: event_click_button_select_directory()
     )
     button_add_url = ft.Button(
         text="追加",
@@ -257,16 +253,19 @@ def main(page: ft.Page):
         ]
     )
     list_view_url_input = ft.ListView(
-        [data_table_url_input], expand=1, spacing=10, padding=20)
+        controls=[data_table_url_input],
+        expand=1, spacing=10, padding=20)
 
     # プログレスバー定義
-    progress_bar_download_status = ft.ProgressBar(width=800, value=0, visible=False)
-
+    progress_bar_download_status = ft.ProgressBar(
+        width=800, value=0, visible=False)
 
     #
     # ページ内UIレイアウト定義
     #
 
+    row_spacer_large = ft.Row(controls=[ft.Divider(height=20)])
+    row_spacer_small = ft.Row(controls=[ft.Divider(height=10)])
     row_save_path = ft.Row(
         controls=[
             ft.Text("保存パス指定"),
@@ -296,7 +295,6 @@ def main(page: ft.Page):
                 width=900
             ),
         ],
-        scroll="auto",
     )
     row_button_download_start = ft.Row(
         controls=[button_download_start],
@@ -312,12 +310,13 @@ def main(page: ft.Page):
     )
 
     page.add(
+        row_spacer_large,
         row_save_path,
         row_file_ext,
-        ft.Divider(),  # 横線
+        row_spacer_small,
         row_add_url,
         row_list_view_url_input,
-        ft.Divider(),  # 横線
+        row_spacer_small,
         row_button_download_start,
         row_progress_bar_download_status,
         row_text_download_status
