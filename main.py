@@ -41,7 +41,8 @@ def get_formatted_youtube_url(url: str):
     
     # 整形後のURLを取得
     query = f"v={video_id}"
-    formatted_url = urlunparse((result.scheme, result.netloc, result.path, "", query, ""))
+    formatted_url = urlunparse(
+        (result.scheme, result.netloc, result.path, "", query, ""))
 
     return formatted_url
 
@@ -161,7 +162,8 @@ def main(page: ft.Page):
         progress_limit = len(url_list)
         progress_bar_download_status.value = 0
         progress_bar_download_status.visible = True
-        text_download_status.value = f"現在のダウンロード状況 ... 0/{progress_limit} 進行中"
+        text_download_status.value = \
+            f"現在のダウンロード状況 ... 0/{progress_limit} 進行中"
         text_download_status.visible = True
         page.update()
 
@@ -170,8 +172,10 @@ def main(page: ft.Page):
             for url in url_list:
                 ydl.extract_info(url)
                 progress_count += 1
-                progress_bar_download_status.value = (progress_count / progress_limit)
-                text_download_status.value = f"現在のダウンロード状況 ... {progress_count}/{progress_limit} 進行中"
+                progress_bar_download_status.value = \
+                    (progress_count / progress_limit)
+                text_download_status.value = \
+                    f"現在のダウンロード状況 ... {progress_count}/{progress_limit} 進行中"
                 page.update()
 
             time.sleep(1)
@@ -186,14 +190,14 @@ def main(page: ft.Page):
         data_table_url_input.rows.clear()
         data_table_url_input.update()
 
-
     #
     # 入力・表示制御が必要なUI群の定義
     #
 
     # FilePicker定義
     # Note: appendによるpage追加がないとエラー発生
-    get_directory_dialog = ft.FilePicker(on_result=event_get_directory_result)
+    get_directory_dialog = ft.FilePicker(
+        on_result=event_get_directory_result)
     page.overlay.append(get_directory_dialog)
 
     # 拡張子選択用チェックボックス
@@ -229,7 +233,8 @@ def main(page: ft.Page):
     button_select_save_path = ft.FilledButton(
         text="選択",
         disabled=page.web,
-        on_click=lambda _: event_click_button_select_directory()
+        on_click=lambda _: \
+            event_click_button_select_directory()
     )
     button_add_url = ft.Button(
         text="追加",
@@ -266,6 +271,7 @@ def main(page: ft.Page):
 
     row_spacer_large = ft.Row(controls=[ft.Divider(height=20)])
     row_spacer_small = ft.Row(controls=[ft.Divider(height=10)])
+
     row_save_path = ft.Row(
         controls=[
             ft.Text("保存パス指定"),
